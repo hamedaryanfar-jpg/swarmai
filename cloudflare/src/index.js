@@ -390,7 +390,12 @@ export default {
       return new Response(`File ${fileName} not found`, { status: 404, headers: corsHeaders });
     }
 
-    // Default Fallback
+    // --- 5. Default Fallback & Static Asset Serving ---
+    // If ASSETS binding exists (Unified Worker + Static Frontend), serve client UI!
+    if (env && env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
+
     return new Response(JSON.stringify({
       message: "SwarmAI Edge Coordinator is operational.",
       endpoints: [

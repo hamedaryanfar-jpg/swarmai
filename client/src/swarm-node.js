@@ -9,8 +9,14 @@ import { SwarmEngine } from "./swarm-engine.js";
 
 class SwarmNodeApp {
   constructor() {
+    // Dynamically detect coordinator URL: same origin if deployed on Cloudflare or server.js, else localhost:8787
+    const hostOrigin = (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http"))
+      ? window.location.origin
+      : "http://127.0.0.1:8787";
+
+    this.coordinatorUrl = hostOrigin;
     this.webgpu = new WebGPUEngine();
-    this.mesh = new WebRTCMesh("http://127.0.0.1:8787");
+    this.mesh = new WebRTCMesh(this.coordinatorUrl);
     this.vfs = new AgentVFS();
     this.engine = new SwarmEngine(this.webgpu, this.mesh, this.vfs);
 
@@ -77,7 +83,7 @@ class SwarmNodeApp {
     const edgeStatus = document.getElementById("edge-status");
 
     try {
-      const res = await fetch("http://127.0.0.1:8787/api/health").catch(() => null);
+      const res = await fetch(`${this.coordinatorUrl}/api/health`).catch(() => null);
       if (res && res.ok) {
         const data = await res.json();
         edgeDot.className = "dot dot-green";
