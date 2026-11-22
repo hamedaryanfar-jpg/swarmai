@@ -1,0 +1,23 @@
+# OS Files
+.DS_Store
+._*
+Thumbs.db
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Cloudflare & Wrangler
+.wrangler/
+.mf/
+
+# Logs & Environment
+*.log
+.env
+.env.*
+!.env.example
+
+# Temporary / Artifacts
+tmp/
+dist/
+build/

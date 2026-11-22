@@ -1,0 +1,13 @@
+name = "swarm-ai-coordinator"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Cloudflare R2 Bucket Binding for Sharded Model Weights
+[[r2_buckets]]
+binding = "MODEL_STORAGE"
+bucket_name = "swarm-ai-models"
+
+# Cloudflare KV for Geo-Presence & Peer Registry (Optional / Can be created via CLI)
+# [[kv_namespaces]]
+# binding = "SWARM_NODES"
+# id = "your-kv-namespace-id"

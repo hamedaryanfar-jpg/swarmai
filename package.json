@@ -1,0 +1,23 @@
+{
+  "name": "swarmai",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SwarmAI: Decentralized Edge-to-Client AI Coding Engine",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "coordinator": "node cloudflare/standalone-server.js",
+    "test": "node test/e2e-test.js"
+  },
+  "keywords": [
+    "swarm-ai",
+    "webgpu",
+    "webrtc",
+    "cloudflare-workers",
+    "p2p",
+    "distributed-ai",
+    "react-loop"
+  ],
+  "author": "SwarmAI Team",
+  "license": "MIT"
+}

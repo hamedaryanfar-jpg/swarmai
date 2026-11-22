@@ -1,0 +1,18 @@
+{
+  "name": "swarm-ai-coordinator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cloudflare Worker Edge Coordinator and WebRTC Signaling for SwarmAI",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "start": "node standalone-server.js"
+  },
+  "keywords": ["swarm-ai", "cloudflare-workers", "webrtc", "webgpu", "p2p"],
+  "author": "SwarmAI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.114.0"
+  }
+}
