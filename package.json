@@ -6,8 +6,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "deploy": "wrangler deploy",
     "coordinator": "node cloudflare/standalone-server.js",
     "test": "node test/e2e-test.js"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.0"
   },
   "keywords": [
     "swarm-ai",

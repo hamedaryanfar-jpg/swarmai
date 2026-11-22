@@ -1,0 +1,8 @@
+name = "swarmai"
+main = "cloudflare/src/index.js"
+compatibility_date = "2024-09-23"
+
+# Serve Static Assets (Client UI) directly from Worker
+[assets]
+directory = "client/src"
+binding = "ASSETS"
