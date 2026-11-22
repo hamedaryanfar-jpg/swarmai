@@ -14,6 +14,8 @@ export class SwarmEngine {
     this.currentMode = "chat"; // 'chat' | 'plan' | 'agent'
     this.isBusy = false;
     this.pendingPlan = null;
+    this.lastGeneratedCode = null; // Stores last generated snippet { filename, content, lang }
+    this.lastPrompt = "";
 
     // Callbacks for UI
     this.onStreamToken = null;
@@ -82,53 +84,62 @@ export class SwarmEngine {
   }
 
   generateEngineeringChat(prompt, latencyMs) {
+    this.lastPrompt = prompt;
     const p = prompt.toLowerCase();
     const header = `> ⚡ *WebGPU Tensor Pass: ${latencyMs}ms | Mesh: ${this.mesh.assignedShard.toUpperCase()} | Active Peers: ${this.mesh.activePeers.size}*\n\n`;
 
     // HTML / Hello World request
-    if (p.includes("html") || p.includes("hello") || p.includes("index")) {
+    if (p.includes("html") || p.includes("hello") || p.includes("index") || p.includes("page")) {
+      const htmlCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello World - SwarmAI</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d1117;
+      color: #58a6ff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .card {
+      text-align: center;
+      padding: 2.5rem 3rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    h1 { margin: 0 0 10px; font-size: 2.5rem; color: #ffffff; }
+    p { margin: 0; color: #8b949e; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚡ Hello, World!</h1>
+    <p>Powered by SwarmAI Decentralized Engine</p>
+  </div>
+</body>
+</html>`;
+
+      this.lastGeneratedCode = {
+        filename: "index.html",
+        content: htmlCode,
+        lang: "html"
+      };
+
       return [
         header,
         "Here is a complete, modern, responsive **HTML5 Hello World** document:\n\n",
         "```html\n",
-        "<!DOCTYPE html>\n",
-        "<html lang=\"en\">\n",
-        "<head>\n",
-        "  <meta charset=\"UTF-8\">\n",
-        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n",
-        "  <title>Hello World - SwarmAI</title>\n",
-        "  <style>\n",
-        "    body {\n",
-        "      margin: 0;\n",
-        "      height: 100vh;\n",
-        "      display: flex;\n",
-        "      align-items: center;\n",
-        "      justify-content: center;\n",
-        "      background: #0d1117;\n",
-        "      color: #58a6ff;\n",
-        "      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n",
-        "    }\n",
-        "    .card {\n",
-        "      text-align: center;\n",
-        "      padding: 2.5rem 3rem;\n",
-        "      background: #161b22;\n",
-        "      border: 1px solid #30363d;\n",
-        "      border-radius: 12px;\n",
-        "      box-shadow: 0 8px 24px rgba(0,0,0,0.4);\n",
-        "    }\n",
-        "    h1 { margin: 0 0 10px; font-size: 2.5rem; color: #ffffff; }\n",
-        "    p { margin: 0; color: #8b949e; font-size: 1.1rem; }\n",
-        "  </style>\n",
-        "</head>\n",
-        "<body>\n",
-        "  <div class=\"card\">\n",
-        "    <h1>⚡ Hello, World!</h1>\n",
-        "    <p>Powered by SwarmAI Decentralized Engine</p>\n",
-        "  </div>\n",
-        "</body>\n",
-        "</html>\n",
-        "```\n\n",
-        "*Tip: Switch to **Agent Mode** to have SwarmAI automatically write and save this file directly into your workspace!*"
+        htmlCode,
+        "\n```\n\n",
+        "*Tip: Switch to **Agent Mode** and say `fileshi bede` to have SwarmAI write and save this file directly into your workspace!*"
       ];
     }
 
@@ -276,9 +287,40 @@ export class SwarmEngine {
 
     const p = prompt.toLowerCase();
 
-    // INTENT 1: User requested HTML / Hello World / Web file creation
-    if (p.includes("html") || p.includes("hello") || p.includes("index") || (p.includes("benevis") && p.includes("file"))) {
-      const targetFileName = p.includes(".html") ? "index.html" : "index.html";
+    // INTENT 0: Follow-up to save previously generated code (e.g. "fileshi bede", "file bede", "save it", "besaz")
+    const isFileRequest = p.includes("file") || p.includes("filo") || p.includes("filesh") || p.includes("besaz") || p.includes("save") || p.includes("bede") || p.includes("zakhire");
+
+    if (this.lastGeneratedCode && isFileRequest) {
+      const { filename, content } = this.lastGeneratedCode;
+      onChunk(`**1. [Reason]** Context detected: User requested to save the previously generated **\`${filename}\`** directly into the workspace.\n`);
+      await this.sleep(200);
+
+      onChunk(`**2. [Act]** Executing \`write_file("${filename}", content)\` to persist file in workspace.\n`);
+      const writeRes = await this.vfs.writeFile(filename, content);
+      notifyTool("write_file", { path: filename, length: content.length }, writeRes);
+      onChunk(`  ➜ 📝 Successfully written **${content.length}** bytes to \`${filename}\`.\n\n`);
+      await this.sleep(250);
+
+      onChunk(`**3. [Verify]** Checking workspace files with \`run_command("ls")\`.\n`);
+      const lsRes = await this.vfs.runCommand("ls");
+      notifyTool("run_command", { command: "ls" }, lsRes);
+      onChunk(`  ➜ ⚡ Output:\n\`\`\`\n${lsRes.stdout}\`\`\`\n`);
+      await this.sleep(200);
+
+      onChunk(`**4. [Observe]** Validating with \`read_file("${filename}")\`.\n`);
+      const readRes = await this.vfs.readFile(filename);
+      notifyTool("read_file", { path: filename }, readRes);
+      onChunk(`  ➜ 🔍 Confirmed: \`${filename}\` contains **${readRes.totalLines}** lines.\n\n`);
+
+      onChunk(`✅ **[Task Complete]** File \`${filename}\` is now saved in your workspace!\n\n`);
+      onChunk(`\`\`\`${this.lastGeneratedCode.lang || 'html'}\n${content}\n\`\`\`\n`);
+      onChunk(`*Click on **\`${filename}\`** in the left sidebar to open and edit it in the code viewer!*`);
+      return;
+    }
+
+    // INTENT 1: User requested HTML / Hello World / Web file creation from scratch
+    if (p.includes("html") || p.includes("hello") || p.includes("index") || (p.includes("benevis") && p.includes("file")) || (p.includes("file") && (p.includes("besaz") || p.includes("bede")))) {
+      const targetFileName = "index.html";
 
       onChunk(`**1. [Reason]** Target identified: User requested an **HTML Hello World document** (\`${targetFileName}\`).\n`);
       onChunk(`  ➜ Preparing complete, responsive HTML5 code structure with embedded styles.\n\n`);
@@ -320,6 +362,8 @@ export class SwarmEngine {
   </div>
 </body>
 </html>`;
+
+      this.lastGeneratedCode = { filename: targetFileName, content: htmlContent, lang: "html" };
 
       onChunk(`**2. [Act]** Writing file to workspace using \`write_file("${targetFileName}", content)\`.\n`);
       const writeRes = await this.vfs.writeFile(targetFileName, htmlContent);

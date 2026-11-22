@@ -362,9 +362,23 @@ class SwarmNodeApp {
             btn.className = "plan-action-btn";
             btn.innerHTML = `🚀 Approve & Execute in Agent Mode`;
             btn.addEventListener("click", () => {
-              // Switch to Agent mode and execute
               document.getElementById("mode-agent-btn").click();
               this.sendPrompt(`Execute approved plan for: ${text}`);
+            });
+            assistantDiv.appendChild(btn);
+          }
+        }
+
+        // If in Chat Mode and code was generated, inject "Save to Workspace" button
+        if (this.engine.currentMode === "chat" && this.engine.lastGeneratedCode && fullMarkdown.includes("```")) {
+          if (!assistantDiv.querySelector(".save-action-btn")) {
+            const btn = document.createElement("button");
+            btn.className = "plan-action-btn save-action-btn";
+            btn.style.background = "var(--accent)";
+            btn.innerHTML = `💾 Save ${this.engine.lastGeneratedCode.filename} to Workspace (Agent Mode)`;
+            btn.addEventListener("click", () => {
+              document.getElementById("mode-agent-btn").click();
+              this.sendPrompt(`fileshi bede`);
             });
             assistantDiv.appendChild(btn);
           }
